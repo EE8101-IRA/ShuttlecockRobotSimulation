@@ -1,39 +1,56 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 
-public class DatagramManager : MonoBehaviour
+public class ImageStreamManager : MonoBehaviour
 {
     #region Inspector Variables
     [SerializeField]
     private string ipAddress = "127.0.0.1";
     [SerializeField]
     private int port = 11000;
+    [SerializeField]
+    private RenderTexture renderTexture;
     #endregion
 
     #region private members
     private static bool run = false;
-    private Thread clientSenderThread;
+    private Thread clientReceiveThread;
     #endregion
 
     // Awake is called before the first frame update
     void Awake()
     {
-        // Start UDP Listener
-        StartThread(clientSenderThread, new ThreadStart(UDPSenderProcess));
+        run = true;
+
+        // Start UDP Sender
+        StartCoroutine(SendImageOverUdp());
         // Start UDP Listener
         //StartThread(new ThreadStart(UDPListener));
+    }
+
+    private string TextureToBase64(RenderTexture renderTexture)
+    {
+        Texture2D texture2D = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+        RenderTexture.active = renderTexture;
+        texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+
+        string imageStr = Convert.ToBase64String(texture2D.EncodeToJPG());
+
+        RenderTexture.active = null; // "just in case" 
+
+        return imageStr;
     }
 
     private void StartThread(Thread thread, ThreadStart threadStart)
     {
         try
         {
-            run = true;
             Application.backgroundLoadingPriority = UnityEngine.ThreadPriority.Low;
 
             thread = new Thread(threadStart);
@@ -53,45 +70,46 @@ public class DatagramManager : MonoBehaviour
         run = false;
 
         // free the Thread
-        if (clientSenderThread != null)
-            clientSenderThread.Abort();
+        if (clientReceiveThread != null)
+            clientReceiveThread.Abort();
     }
 
-    #region UDP Sender
-    private void UDPSenderProcess()
+    private IEnumerator SendImageOverUdp()
     {
-        int counter = 0;
-        using (var udpClient = new UdpClient())
+        while (run)
         {
-            try
-            {
-                udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                //udpServer2.Client.Bind(port);
-                udpClient.Connect(ipAddress, port);
+            string data = TextureToBase64(renderTexture);
 
-                // Keeps sending the current frame until connection is closed
-                while (run)
+            using (var udpClient = new UdpClient())
+            {
+                try
                 {
-                    byte[] sendBytes = Encoding.ASCII.GetBytes("Hello world! " + counter);  // temporary data
+                    udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);    // allow communication with a local server using same port
+                    //udpServer2.Client.Bind(port);
+                    udpClient.Connect(ipAddress, port);
+
+                    // Create byte[] data
+                    byte[] sendBytes = Convert.FromBase64String(data);
+                    // prepend length of base64 string before sending -- not needed
+                    //byte[] lengthBytes = BitConverter.GetBytes(imageBytes.Length);
+                    //byte[] sendBytes = new byte[imageBytes.Length + lengthBytes.Length];
+                    //sendBytes = lengthBytes.Concat(imageBytes).ToArray();
+
+                    Debug.Log(sendBytes.Length);
 
                     // Send bytes
                     udpClient.Send(sendBytes, sendBytes.Length);
-
-                    // Increase counter
-                    counter++;
-
-                    // Sleep until next data to send
-                    Thread.Sleep(1000); // wait for 1 second
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log(string.Format("[INFO] {0}", ex.Message));
+                    Debug.Log(string.Format("[INFO] {0}", ex.StackTrace));
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.Log(string.Format("[INFO] {0}", ex.Message));
-                Debug.Log(string.Format("[INFO] {0}", ex.StackTrace));
-            }
+
+            yield return new WaitForSeconds(5f);    // wait for 5 seconds before sending again
         }
     }
-    #endregion
 
     #region UDP Listener
     private void UDPListenerProcess()
