@@ -5,49 +5,40 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField]
-    float moveSpeed = 10f;
+    [Tooltip("Cameras for scene view")]
+    private GameObject[] sceneCameras;
+
     [SerializeField]
-    float rotateSpeed = 50f;
+    private KeyCode toggleKey = KeyCode.Tab;
+
+    private int currSelectedCamera = 0;
+    private int numCameras;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        numCameras = sceneCameras.Length;
+        SetSelectedCameraActive();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        // Control transform
-        Rotate();
-        Move();
-    }
-
-    private void Rotate()
-    {
-        // yaw
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKeyDown(toggleKey))
         {
-            transform.Rotate(0f, -rotateSpeed * Time.deltaTime, 0f, Space.Self);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(0f, rotateSpeed * Time.deltaTime, 0f, Space.Self);
+            currSelectedCamera = (currSelectedCamera + 1) % numCameras;
+            SetSelectedCameraActive();
         }
     }
 
-    private void Move()
+    private void SetSelectedCameraActive()
     {
-        if (Input.GetKey(KeyCode.UpArrow))
+        for (int i = 0; i < numCameras; i++)
         {
-            transform.position += transform.forward * moveSpeed * Time.deltaTime;
-        }
-        else if (Input.GetKey(KeyCode.DownArrow))
-        {
-            transform.position += transform.forward * -moveSpeed * Time.deltaTime;
-        }
-
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            transform.position += transform.right * -moveSpeed * Time.deltaTime;
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            transform.position += transform.right * moveSpeed * Time.deltaTime;
+            if (i == currSelectedCamera)
+                sceneCameras[i].SetActive(true);
+            else
+                sceneCameras[i].SetActive(false);
         }
     }
 }
