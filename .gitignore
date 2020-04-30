@@ -11,6 +11,9 @@
 /[Mm]emoryCaptures/
 /[Uu]nityPackageManager/
 
+# Our own folder for automated training data generation
+/Captures*/
+
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 

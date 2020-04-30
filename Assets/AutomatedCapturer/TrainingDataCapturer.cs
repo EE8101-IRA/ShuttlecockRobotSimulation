@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TrainingDataCapturer : MonoBehaviour
 {
@@ -16,6 +17,9 @@ public class TrainingDataCapturer : MonoBehaviour
     private Transform objectForCapture;
     [SerializeField]
     private FindMinMax objectMinMaxCalculator;
+
+    [SerializeField]
+    private InputField filenameIF;
 
     [Header("Capture Data")]
     [SerializeField]
@@ -58,7 +62,12 @@ public class TrainingDataCapturer : MonoBehaviour
         StringBuilder sb = new StringBuilder();
         sb.Append("filename,xmin,ymin,xmax,ymax,classid\n");
 
-        string directory = Application.dataPath + "/Captures";
+        // directory to save to
+        string directory = Application.dataPath;
+        directory = directory.Remove(directory.Length-6, 6);    // remove "Assets" from the end of the string
+        directory += "Captures";    // save to a Captures folder instead
+
+        // check if directory exists; if it does not, create the necessary folders
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
@@ -68,6 +77,12 @@ public class TrainingDataCapturer : MonoBehaviour
             Directory.CreateDirectory(directory + "/Screenshots");
         }
 
+        // get file name
+        string prefixFilename = filenameIF.text;
+        if (string.IsNullOrEmpty(prefixFilename))
+            prefixFilename = "Image";   // default
+
+        // rotate object & capture screenshot
         for (int i = xAxisStart; i < xAxisStart + xAxisRange; i += xAxisSkip)
         {
             for (int j = yAxisStart; j < yAxisStart + yAxisRange; j += yAxisSkip)
@@ -89,14 +104,14 @@ public class TrainingDataCapturer : MonoBehaviour
                     ss.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
                     ss.Apply();
 
-                    string filename = string.Format("plain_near_{0}.png", count);
+                    string filename = string.Format("{0}_{1}.png", prefixFilename, count);
                     Debug.Log(filename);
                     string filePath = Path.Combine(directory + "/Screenshots/", filename);
                     File.WriteAllBytes(filePath, ss.EncodeToPNG());
 
                     ++count;
 
-                    // save values
+                    // write values to the StringBuilder
                     sb.Append(string.Format("{0},{1},{2},{3},{4},{5}\n",
                                 filename,
                                 objectMinMaxCalculator.MinX,
@@ -110,10 +125,12 @@ public class TrainingDataCapturer : MonoBehaviour
             }
         }
 
-        capturesCompleteDisplay.SetActive(true);
-
-        // export to CSV
-        string csvFilePath = Path.Combine(directory + "/data_near.csv");
+        // export the built string to CSV
+        string csvFilePath = Path.Combine(directory + string.Format("/data_{0}.csv", prefixFilename));
         File.WriteAllText(csvFilePath, sb.ToString());
+
+        // re-enable UI
+        capturesCompleteDisplay.SetActive(true);
+        testingUI.SetActive(true);
     }
 }
