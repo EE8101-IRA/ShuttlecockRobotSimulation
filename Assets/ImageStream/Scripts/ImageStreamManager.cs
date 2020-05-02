@@ -24,7 +24,7 @@ public class ImageStreamManager : MonoBehaviour
     #endregion
 
     // Awake is called before the first frame update
-    void Awake()
+    void Start()
     {
         run = true;
 
