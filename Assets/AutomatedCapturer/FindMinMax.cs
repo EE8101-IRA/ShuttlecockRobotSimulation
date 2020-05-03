@@ -70,11 +70,8 @@ public class FindMinMax : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        if (transform.hasChanged)
-        {
-            CalculateMinMax();
-            transform.hasChanged = false;
-        }
+        CalculateMinMax();
+        transform.hasChanged = false;
     }
 
     public void CalculateMinMax()

@@ -36,7 +36,7 @@ public class ImageStreamManager : MonoBehaviour
 
     private string TextureToBase64(RenderTexture renderTexture)
     {
-        Texture2D texture2D = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+        Texture2D texture2D = new Texture2D(320, 240, TextureFormat.RGBA32, false);
         RenderTexture.active = renderTexture;
         texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
 
