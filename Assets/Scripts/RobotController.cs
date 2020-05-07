@@ -28,9 +28,9 @@ public class RobotController : MonoBehaviour
     private IEnumerator searchCoroutine = null;
 
     /// <summary>
-    /// Start is called before the first frame update
+    /// Call this function to start the robot search algorithm.
     /// </summary>
-    void Start()
+    public void BeginSearch()
     {
         searchCoroutine = ShuttlecockSearch();
         StartCoroutine(searchCoroutine);
@@ -40,109 +40,91 @@ public class RobotController : MonoBehaviour
     {
         while (true)    // will keep searching until a shuttlecock is found
         {
-            // F2 * 4 -- Scan & find 1/4 of court
-            for (int i = 0; i < 4; i++)
+            // F2 * 2 -- Scan the perimeter of the field
+            for (int i = 0; i < 2; i++)
             {
                 // F2: move and scan 1 side at a time
                 yield return MoveAndScan1Side();
             }
 
-            // F1 * 2 -- Scan & find another 1/4 of court
-            for (int i = 0; i < 2; i++)
+            // rotate 53 degrees anti-clockwise (rotate left)
+            yield return rotate(-53f);
+
+            // F1 * 5 -- Scan inside 1/2 field
+            for (int i = 0; i < 5; i++)
             {
                 // F1: move 1 step and scan
                 yield return Move1StepAndScan();
             }
 
-            // F2 * 3 -- Scan & find 1/4 of court
+            // rotate 143 degrees clockwise (rotate right)
+            yield return rotate(143f);
+
+            // F1 * 4-- Scan the middle line
             for (int i = 0; i < 4; i++)
             {
-                // F2: move and scan 1 side at a time
-                yield return MoveAndScan1Side();
+                // F1: move 1 step and scan
+                yield return Move1StepAndScan();
             }
+
+            // rotate 143 degrees anti-clockwise (rotate left)
+            yield return rotate(-143f);
+
+            // F1 * 5 -- Scan inside 1/2 field
+            for (int i = 0; i < 5; i++)
+            {
+
+                Debug.Log("STOP DYING " + i);
+                // F1: move 1 step and scan
+                yield return Move1StepAndScan();
+            }
+
+            // rotate 143+90 degrees clockwise (rotate right)
+            yield return rotate(233f);
 
             Debug.Log("ONE LOOP COMPLETED");
         }
     }
 
     /// <summary>
-    /// Coroutine containing logic for searching. This coroutine needs to be stopped manually.
-    /// </summary>
-    private IEnumerator ShuttlecockSearchOriginal()
-    {
-        while (true)    // will keep searching until a shuttlecock is found
-        {
-            // F2 * 4 -- Scan & find 1/4 of court
-            for (int i = 0; i < 4; i++)
-            {
-                // F2: move and scan 1 side at a time
-                yield return MoveAndScan1Side();
-            }
-
-            // F1 * 2 -- Scan & find another 1/4 of court
-            for (int i = 0; i < 2; i++)
-            {
-                // F1: move 1 step and scan
-                yield return Move1StepAndScan();
-            }
-
-            // F2 * 3 -- Scan & find another 1/4 of court
-            for (int i = 0; i < 3; i++)
-            {
-                // F2: move and scan 1 side at a time
-                yield return MoveAndScan1Side();
-            }
-
-            // Rotate right x2
-            yield return rotate(180f);
-
-            // F2 * 4 -- Scan & find another 1/4 of court
-            for (int i = 0; i < 4; i++)
-            {
-                // F2: move and scan 1 side at a time
-                yield return MoveAndScan1Side();
-            }
-
-            // Rotate right
-            yield return rotate(90f);
-
-            // F2 * 3 -- Scan & find another 1/4 of court
-            for (int i = 0; i < 3; i++)
-            {
-                // F2: move and scan 1 side at a time
-                yield return MoveAndScan1Side();
-            }
-        }
-    }
-
-    /// <summary>
     /// Function 1: Move 1 step and scan
     /// </summary>
-    /// <param name="targetPos"></param>
-    /// <returns></returns>
     private IEnumerator Move1StepAndScan()
     {
         Debug.Log("Now in: F1");
+
+        // move 1 step (4.5m) to the front
         Vector3 targetPos = transform.position + oneStep * transform.forward;
         yield return move(targetPos);
+
+        // scan the area
         yield return ScanTheArea();
     }
 
     /// <summary>
     /// Function 2: Moves 2 steps, each time scanning, then rotates and scans
     /// </summary>
-    /// <returns></returns>
     private IEnumerator MoveAndScan1Side()
     {
         Debug.Log("Now in: F2");
-        // F1: Move 1 step and scan
-        yield return Move1StepAndScan();
-        // F1: Move 1 step and scan
-        yield return Move1StepAndScan();
-        // rotate left by 90 degrees or any other number
+
+        // scan and find length of court
+        for (int i = 0; i < 6; i++) {
+            Debug.Log("F1: " + i);
+            yield return Move1StepAndScan();    // F1: Move 1 step and scan
+        }
+
+        // rotate left by 90 degrees
         yield return rotate(-90f);
-        // F3: Scan the area
-        yield return ScanTheArea();
+
+        // scan and find width of court
+        for (int i = 0; i < 4; i++)
+        {
+            yield return Move1StepAndScan();    // F1: Move 1 step and scan
+        }
+
+        // rotate left by 90 degrees
+        yield return rotate(-90f);
     }
 
     private IEnumerator move(Vector3 targetPos)
@@ -198,13 +180,12 @@ public class RobotController : MonoBehaviour
     /// <summary>
     /// Function 3: Process the robot's current view
     /// </summary>
-    /// <returns></returns>
     private IEnumerator ScanTheArea()
     {
         // send image to server
 
         // wait for response
-        yield return new WaitForSeconds(2f);  // temporary wait
+        yield return new WaitForSeconds(0.2f);  // temporary wait
 
         // react to response
         ///if shuttlecock found
