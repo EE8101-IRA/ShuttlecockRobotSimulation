@@ -99,10 +99,14 @@ public class FindMinMax : MonoBehaviour
         }
 
         // set min and max visualisation
-        maxHorizontalLine.position = new Vector3(maxHorizontalLine.position.x, MaxY);
-        minHorizontalLine.position = new Vector3(minHorizontalLine.position.x, MinY);
+        if (maxHorizontalLine != null)
+            maxHorizontalLine.position = new Vector3(maxHorizontalLine.position.x, MaxY);
+        if (minHorizontalLine != null)
+            minHorizontalLine.position = new Vector3(minHorizontalLine.position.x, MinY);
 
-        maxVerticalLine.position = new Vector3(MaxX, maxVerticalLine.position.y);
-        minVerticalLine.position = new Vector3(MinX, minVerticalLine.position.y);
+        if (maxVerticalLine != null)
+            maxVerticalLine.position = new Vector3(MaxX, maxVerticalLine.position.y);
+        if (minVerticalLine != null)
+            minVerticalLine.position = new Vector3(MinX, minVerticalLine.position.y);
     }
 }

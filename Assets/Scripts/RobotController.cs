@@ -22,6 +22,9 @@ public class RobotController : MonoBehaviour
     [Tooltip("Length of one 'step' (in metres) for the robot")]
     private float oneStep = 1f;
 
+    [SerializeField]
+    private ImageStreamManager imageStreamManager;
+
     /// <summary>
     /// Reference to the search coroutine.
     /// </summary>
@@ -73,8 +76,6 @@ public class RobotController : MonoBehaviour
             // F1 * 5 -- Scan inside 1/2 field
             for (int i = 0; i < 5; i++)
             {
-
-                Debug.Log("STOP DYING " + i);
                 // F1: move 1 step and scan
                 yield return Move1StepAndScan();
             }
@@ -183,6 +184,7 @@ public class RobotController : MonoBehaviour
     private IEnumerator ScanTheArea()
     {
         // send image to server
+        imageStreamManager.SendImage();
 
         // wait for response
         yield return new WaitForSeconds(0.2f);  // temporary wait

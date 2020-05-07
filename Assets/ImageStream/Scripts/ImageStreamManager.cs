@@ -25,6 +25,22 @@ public class ImageStreamManager : MonoBehaviour
     private Thread clientReceiveThread;
     #endregion
 
+    private readonly object responseLock = new object();
+    private bool responseReceived;
+    public bool ResponseReceived {
+        get {
+            lock (responseLock)
+            {
+                return responseReceived;
+            }
+        }
+    }
+    public bool ShuttlecockDetected { get; private set; }
+    public int XMin { get; private set; }
+    public int XMax { get; private set; }
+    public int YMin { get; private set; }
+    public int YMax { get; private set; }
+
     // Awake is called before the first frame update
     void Start()
     {
@@ -75,7 +91,10 @@ public class ImageStreamManager : MonoBehaviour
         if (clientReceiveThread != null)
             clientReceiveThread.Abort();
     }
-
+    
+    /// <summary>
+    /// Method to automatically send an image every 5 seconds. Call this method for testing purposes.
+    /// </summary>
     private IEnumerator SendImageOverUdp()
     {
         while (run)
@@ -85,8 +104,13 @@ public class ImageStreamManager : MonoBehaviour
         }
     }
 
-    private void SendImage()
+    public void SendImage()
     {
+        lock (responseLock)
+        {
+            responseReceived = false;
+        }
+
         string data = TextureToBase64(renderTexture);
 
         using (var udpClient = new UdpClient())
@@ -132,13 +156,32 @@ public class ImageStreamManager : MonoBehaviour
 
                 // Blocks until a message returns on this socket from a remote host.
                 byte[] receivedBytes = udpClient.Receive(ref RemoteIpEndPoint);
-                //string receivedMessage = System.Text.Encoding.UTF8.GetString(receivedBytes);
-                Debug.Log(receivedBytes.Length);
-                int var1 = receivedBytes[0];
-                int var2 = receivedBytes[1];
+                string receivedMessage = System.Text.Encoding.UTF8.GetString(receivedBytes);
+                Debug.Log(receivedMessage);
+
+                // parse received message
+                string[] boundingBox = receivedMessage.Split(',');
+
+                lock (responseLock)
+                {
+                    if (boundingBox.Length == 1)    // no shuttlecock was detected
+                    {
+                        ShuttlecockDetected = false;
+                    }
+                    else
+                    {
+                        ShuttlecockDetected = true;
+                        XMin = int.Parse(boundingBox[0]);
+                        YMin = int.Parse(boundingBox[1]);
+                        XMax = int.Parse(boundingBox[2]);
+                        YMax = int.Parse(boundingBox[3]);
+                    }
+
+                    responseReceived = true;
+                }
 
                 // Uses the IPEndPoint object to determine which of these two hosts responded.
-                Debug.Log("Message: " + var1 + "," + var2 + "\nThis message was sent from " +
+                Debug.Log("Message: " + receivedMessage + "\nThis message was sent from " +
                                             RemoteIpEndPoint.Address.ToString() +
                                             " on their port number " +
                                             RemoteIpEndPoint.Port.ToString());
