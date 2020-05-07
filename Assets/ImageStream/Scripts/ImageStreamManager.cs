@@ -18,6 +18,11 @@ public class ImageStreamManager : MonoBehaviour
     private int incomingPort = 5005;
     [SerializeField]
     private RenderTexture renderTexture;
+
+    [SerializeField]
+    private int streamWidth = 320;
+    [SerializeField]
+    private int streamHeight = 240;
     #endregion
 
     #region private members
@@ -25,6 +30,7 @@ public class ImageStreamManager : MonoBehaviour
     private Thread clientReceiveThread;
     #endregion
 
+    #region received bounding box data
     private readonly object responseLock = new object();
     private bool responseReceived;
     public bool ResponseReceived {
@@ -35,11 +41,29 @@ public class ImageStreamManager : MonoBehaviour
             }
         }
     }
-    public bool ShuttlecockDetected { get; private set; }
-    public int XMin { get; private set; }
-    public int XMax { get; private set; }
-    public int YMin { get; private set; }
-    public int YMax { get; private set; }
+    public bool ObjectDetected { get; private set; }
+
+    private int xMin;
+    private int xMax;
+    private int yMin;
+    private int yMax;
+
+    public float CenterXNormalized {
+        get {
+            float centerX = 0.5f * (xMin + xMax);
+            return (centerX / streamWidth);
+        }
+    }
+    public float CenterYNormalized {
+        get {
+            float centerY = 0.5f * (yMin + yMax);
+            return (centerY / streamHeight);
+        }
+    }
+    public float YMinNormalized {
+        get { return ((float)yMin / streamHeight); }
+    }
+    #endregion
 
     // Awake is called before the first frame update
     void Start()
@@ -54,7 +78,7 @@ public class ImageStreamManager : MonoBehaviour
 
     private string TextureToBase64(RenderTexture renderTexture)
     {
-        Texture2D texture2D = new Texture2D(320, 240, TextureFormat.RGBA32, false);
+        Texture2D texture2D = new Texture2D(streamWidth, streamHeight, TextureFormat.RGBA32, false);
         RenderTexture.active = renderTexture;
         texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
 
@@ -157,34 +181,36 @@ public class ImageStreamManager : MonoBehaviour
                 // Blocks until a message returns on this socket from a remote host.
                 byte[] receivedBytes = udpClient.Receive(ref RemoteIpEndPoint);
                 string receivedMessage = System.Text.Encoding.UTF8.GetString(receivedBytes);
-                Debug.Log(receivedMessage);
+                // Uses the IPEndPoint object to determine which of these two hosts responded.
+                Debug.Log("Message: " + receivedMessage + "\nThis message was sent from " +
+                                            RemoteIpEndPoint.Address.ToString() +
+                                            " on their port number " +
+                                            RemoteIpEndPoint.Port.ToString());
 
                 // parse received message
                 string[] boundingBox = receivedMessage.Split(',');
 
                 lock (responseLock)
                 {
-                    if (boundingBox.Length == 1)    // no shuttlecock was detected
+                    if (boundingBox.Length == 1)    // no object was detected
                     {
-                        ShuttlecockDetected = false;
+                        ObjectDetected = false;
                     }
                     else
                     {
-                        ShuttlecockDetected = true;
-                        XMin = int.Parse(boundingBox[0]);
-                        YMin = int.Parse(boundingBox[1]);
-                        XMax = int.Parse(boundingBox[2]);
-                        YMax = int.Parse(boundingBox[3]);
+                        ObjectDetected = true;
+                        // XMin
+                        xMin = int.Parse(boundingBox[0]);
+                        // YMin
+                        yMin = int.Parse(boundingBox[1]);
+                        // XMax
+                        xMax = int.Parse(boundingBox[2]);
+                        // YMax
+                        yMax = int.Parse(boundingBox[3]);
                     }
 
                     responseReceived = true;
                 }
-
-                // Uses the IPEndPoint object to determine which of these two hosts responded.
-                Debug.Log("Message: " + receivedMessage + "\nThis message was sent from " +
-                                            RemoteIpEndPoint.Address.ToString() +
-                                            " on their port number " +
-                                            RemoteIpEndPoint.Port.ToString());
             }
         }
     }

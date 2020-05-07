@@ -30,6 +30,19 @@ public class RobotController : MonoBehaviour
     /// </summary>
     private IEnumerator searchCoroutine = null;
 
+
+    #region bounding box processing
+    private float centerMinThreshold = 0.3f;    // minimum X allowed for center (normalized)
+    private float centerMaxThreshold = 0.7f;    // maximum X allowed for center (normalized)
+
+    private float reachedY = 0.1f; // maxmimum allowed value for YMin (normalized) to consider as "reached" the shuttlecock
+    #endregion
+
+    #region post-detected movement values
+    private float detected_rotateBy = 20f;  // rotate by 20 degrees when centering itself
+    private float detected_moveBy = 0.5f;   // move by 0.5m per object detection
+    #endregion
+
     /// <summary>
     /// Call this function to start the robot search algorithm.
     /// </summary>
@@ -187,11 +200,65 @@ public class RobotController : MonoBehaviour
         imageStreamManager.SendImage();
 
         // wait for response
-        yield return new WaitForSeconds(0.2f);  // temporary wait
+        while (true)
+        {
+            if (imageStreamManager.ResponseReceived)
+                break;
+
+            yield return new WaitForSeconds(0.1f);  // wait for awhile before checking again
+        }
 
         // react to response
-        ///if shuttlecock found
-            ///stop the search coroutine
+        ///if a shuttlecock is found
+        if (imageStreamManager.ObjectDetected)
+        {
             ///move to shuttlecock
+            yield return MoveToShuttlecock();
+        }
+    }
+
+    private IEnumerator MoveToShuttlecock()
+    {
+        // object is centered; move straight
+        if (imageStreamManager.CenterXNormalized >= centerMinThreshold &&
+                imageStreamManager.CenterXNormalized <= centerMaxThreshold)
+        {
+            // reached robot
+            if (imageStreamManager.YMinNormalized <= reachedY)
+            {
+                yield return new WaitForSeconds(0.25f);
+
+                ///stop the search coroutine - for now, simulation ends here
+                StopCoroutine(searchCoroutine);
+                searchCoroutine = null;
+            }
+            // has not reached robot
+            else
+            {
+                // move to the front by a small amount
+                Vector3 targetPos = transform.position + detected_moveBy * transform.forward;
+                yield return move(targetPos);
+
+                // scan the area
+                yield return ScanTheArea();
+            }
+        }
+        // object is not centered; rotate
+        else
+        {
+            if (imageStreamManager.CenterXNormalized < centerMinThreshold)
+            {
+                // rotate to the right by a small amount
+                yield return rotate(detected_rotateBy);
+            }
+            else    // imageStreamManager.CenterXNormalized > centerMaxThreshold
+            {
+                // rotate to the left by a small amount
+                yield return rotate(-detected_rotateBy);
+            }
+
+            // scan the area
+            yield return ScanTheArea();
+        }
     }
 }
