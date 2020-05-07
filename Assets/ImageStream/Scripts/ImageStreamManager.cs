@@ -13,7 +13,9 @@ public class ImageStreamManager : MonoBehaviour
     [SerializeField]
     private string ipAddress = "127.0.0.1";
     [SerializeField]
-    private int port = 11000;
+    private int outgoingPort = 11000;
+    [SerializeField]
+    private int incomingPort = 5005;
     [SerializeField]
     private RenderTexture renderTexture;
     #endregion
@@ -29,9 +31,9 @@ public class ImageStreamManager : MonoBehaviour
         run = true;
 
         // Start UDP Sender
-        StartCoroutine(SendImageOverUdp());
+        //StartCoroutine(SendImageOverUdp());
         // Start UDP Listener
-        //StartThread(new ThreadStart(UDPListener));
+        StartThread(clientReceiveThread, new ThreadStart(UDPListenerProcess));
     }
 
     private string TextureToBase64(RenderTexture renderTexture)
@@ -78,43 +80,47 @@ public class ImageStreamManager : MonoBehaviour
     {
         while (run)
         {
-            string data = TextureToBase64(renderTexture);
-
-            using (var udpClient = new UdpClient())
-            {
-                try
-                {
-                    udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);    // allow communication with a local server using same port
-                    //udpServer2.Client.Bind(port);
-                    udpClient.Connect(ipAddress, port);
-
-                    // Create byte[] data
-                    byte[] sendBytes = Convert.FromBase64String(data);
-                    // prepend length of base64 string before sending -- not needed
-                    //byte[] lengthBytes = BitConverter.GetBytes(imageBytes.Length);
-                    //byte[] sendBytes = new byte[imageBytes.Length + lengthBytes.Length];
-                    //sendBytes = lengthBytes.Concat(imageBytes).ToArray();
-
-                    Debug.Log(sendBytes.Length);
-
-                    // Send bytes
-                    udpClient.Send(sendBytes, sendBytes.Length);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log(string.Format("[INFO] {0}", ex.Message));
-                    Debug.Log(string.Format("[INFO] {0}", ex.StackTrace));
-                }
-            }
-
+            SendImage();
             yield return new WaitForSeconds(5f);    // wait for 5 seconds before sending again
+        }
+    }
+
+    private void SendImage()
+    {
+        string data = TextureToBase64(renderTexture);
+
+        using (var udpClient = new UdpClient())
+        {
+            try
+            {
+                udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);    // allow communication with a local server using same port
+                                                                                                                    //udpServer2.Client.Bind(port);
+                udpClient.Connect(ipAddress, outgoingPort);
+
+                // Create byte[] data
+                byte[] sendBytes = Convert.FromBase64String(data);
+                // prepend length of base64 string before sending -- not needed
+                //byte[] lengthBytes = BitConverter.GetBytes(imageBytes.Length);
+                //byte[] sendBytes = new byte[imageBytes.Length + lengthBytes.Length];
+                //sendBytes = lengthBytes.Concat(imageBytes).ToArray();
+
+                Debug.Log(sendBytes.Length);
+
+                // Send bytes
+                udpClient.Send(sendBytes, sendBytes.Length);
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(string.Format("[INFO] {0}", ex.Message));
+                Debug.Log(string.Format("[INFO] {0}", ex.StackTrace));
+            }
         }
     }
 
     #region UDP Listener
     private void UDPListenerProcess()
     {
-        using (var udpClient = new UdpClient(port))
+        using (var udpClient = new UdpClient(incomingPort))
         {
             while (true)
             {
@@ -125,15 +131,17 @@ public class ImageStreamManager : MonoBehaviour
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), 0);
 
                 // Blocks until a message returns on this socket from a remote host.
-                byte[] receiveBytes = udpClient.Receive(ref RemoteIpEndPoint);
-                //string returnData = Encoding.ASCII.GetString(receiveBytes);
+                byte[] receivedBytes = udpClient.Receive(ref RemoteIpEndPoint);
+                //string receivedMessage = System.Text.Encoding.UTF8.GetString(receivedBytes);
+                Debug.Log(receivedBytes.Length);
+                int var1 = receivedBytes[0];
+                int var2 = receivedBytes[1];
 
                 // Uses the IPEndPoint object to determine which of these two hosts responded.
-                Debug.Log("This message was sent from " +
+                Debug.Log("Message: " + var1 + "," + var2 + "\nThis message was sent from " +
                                             RemoteIpEndPoint.Address.ToString() +
                                             " on their port number " +
                                             RemoteIpEndPoint.Port.ToString());
-
             }
         }
     }

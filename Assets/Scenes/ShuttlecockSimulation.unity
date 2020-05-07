@@ -361,6 +361,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: 10526_Shuttlecock_v1_L3
       objectReference: {fileID: 0}
+    - target: {fileID: 3054537347884867799, guid: 07b1987490dac804e907755215999632,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 07b1987490dac804e907755215999632, type: 3}
 --- !u!1 &170076733
@@ -683,7 +688,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &364487336
 Transform:
   m_ObjectHideFlags: 0
@@ -711,7 +716,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ipAddress: 127.0.0.1
-  port: 11000
+  outgoingPort: 11000
+  incomingPort: 5005
   renderTexture: {fileID: 8400000, guid: cf8a0b0303f71004dba72712fd45e4d1, type: 2}
 --- !u!20 &364487338
 Camera:
@@ -804,7 +810,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!81 &534669903
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1097,7 +1103,7 @@ PrefabInstance:
     - target: {fileID: 3054537347884867799, guid: 07b1987490dac804e907755215999632,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 07b1987490dac804e907755215999632, type: 3}
@@ -1279,7 +1285,7 @@ PrefabInstance:
     - target: {fileID: 3054537347884867799, guid: 07b1987490dac804e907755215999632,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 07b1987490dac804e907755215999632, type: 3}
@@ -1388,7 +1394,7 @@ PrefabInstance:
     - target: {fileID: 3054537347884867799, guid: 07b1987490dac804e907755215999632,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 07b1987490dac804e907755215999632, type: 3}
@@ -1579,7 +1585,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1322351306}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.5, y: 0.25, z: -15.44}
+  m_LocalPosition: {x: 6.74, y: 0.25, z: -13.81}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children:
   - {fileID: 364487336}

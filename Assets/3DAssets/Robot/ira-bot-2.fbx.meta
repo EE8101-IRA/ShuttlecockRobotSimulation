@@ -54,7 +54,22 @@ ModelImporter:
     4300006: pTorus2
     4300008: pCube4
     4300010: pCube5
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: body
+    second: {fileID: 2100000, guid: 155f8c5f4ddf84847a63486626351560, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert1
+    second: {fileID: 2100000, guid: 34c348cf837a5504cac93e3a3df49400, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: spade
+    second: {fileID: 2100000, guid: 2b10c1f7c9db8784d8afd0d3bac61d98, type: 2}
   materials:
     importMaterials: 1
     materialName: 0

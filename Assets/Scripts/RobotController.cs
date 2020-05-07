@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// The robot's logic for where and how to search and move towards a shuttlecock
+/// The robot's logic for how to search and move towards a shuttlecock
 /// </summary>
 public class RobotController : MonoBehaviour
 {
@@ -19,7 +19,7 @@ public class RobotController : MonoBehaviour
     private float rotateSpeed = 50f;
 
     [SerializeField]
-    [Tooltip("Length of one 'step' for the robot")]
+    [Tooltip("Length of one 'step' (in metres) for the robot")]
     private float oneStep = 1f;
 
     /// <summary>
