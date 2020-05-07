@@ -52,8 +52,78 @@ public class TrainingDataCapturer : MonoBehaviour
     public void BeginCapture()
     {
         testingUI.SetActive(false);
+        capturesCompleteDisplay.SetActive(false);
 
         StartCoroutine(Capture());
+    }
+
+    public void TakeSingleCapture()
+    {
+        // disable UI
+        testingUI.SetActive(false);
+        capturesCompleteDisplay.SetActive(false);
+
+        StartCoroutine(SingleCapture());
+    }
+
+    private IEnumerator SingleCapture()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("filename,xmin,ymin,xmax,ymax,classid\n");
+
+        // directory to save to
+        string directory = Application.dataPath;
+        directory = directory.Remove(directory.Length - 6, 6);    // remove "Assets" from the end of the string
+        directory += "Captures";    // save to a Captures folder instead
+
+        // check if directory exists; if it does not, create the necessary folders
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        if (!Directory.Exists(directory + "/Screenshots"))
+        {
+            Directory.CreateDirectory(directory + "/Screenshots");
+        }
+
+        // get file name
+        string prefixFilename = filenameIF.text;
+        if (string.IsNullOrEmpty(prefixFilename))
+            prefixFilename = "Image";   // default
+
+        // calculate bounding box min and max values
+        objectMinMaxCalculator.CalculateMinMax();
+
+        // take screenshot
+        yield return new WaitForEndOfFrame();
+
+        Texture2D ss = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+        ss.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+        ss.Apply();
+
+        string filename = string.Format("{0}.png", prefixFilename);
+        Debug.Log(filename);
+        string filePath = Path.Combine(directory + "/Screenshots/", filename);
+        File.WriteAllBytes(filePath, ss.EncodeToPNG());
+
+        // write values to the StringBuilder
+        sb.Append(string.Format("{0},{1},{2},{3},{4},{5}\n",
+                    filename,
+                    objectMinMaxCalculator.MinX,
+                    objectMinMaxCalculator.MinY,
+                    objectMinMaxCalculator.MaxX,
+                    objectMinMaxCalculator.MaxY,
+                    0));
+
+        yield return null;
+        
+        // export the built string to CSV
+        string csvFilePath = Path.Combine(directory + string.Format("/data_{0}.csv", prefixFilename));
+        File.WriteAllText(csvFilePath, sb.ToString());
+
+        // re-enable UI
+        capturesCompleteDisplay.SetActive(true);
+        testingUI.SetActive(true);
     }
 
     private IEnumerator Capture()
