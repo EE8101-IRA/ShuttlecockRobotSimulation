@@ -32,14 +32,20 @@ public class RobotController : MonoBehaviour
 
 
     #region bounding box processing
+    [Header("Moving Towards Detected Object")]
+    [SerializeField]
     private float centerMinThreshold = 0.3f;    // minimum X allowed for center (normalized)
+    [SerializeField]
     private float centerMaxThreshold = 0.7f;    // maximum X allowed for center (normalized)
 
-    private float reachedY = 0.1f; // maxmimum allowed value for YMin (normalized) to consider as "reached" the shuttlecock
+    [SerializeField]
+    private float reachedY = 0.3f; // maxmimum allowed value for YMin (normalized) to consider as "reached" the shuttlecock
     #endregion
 
     #region post-detected movement values
+    [SerializeField]
     private float detected_rotateBy = 20f;  // rotate by 20 degrees when centering itself
+    [SerializeField]
     private float detected_moveBy = 0.5f;   // move by 0.5m per object detection
     #endregion
 

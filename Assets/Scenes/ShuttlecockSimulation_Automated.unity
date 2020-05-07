@@ -450,8 +450,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdbdb1f6c5716794fb5396c882d2aab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 0}
-  meshFilter: {fileID: 0}
+  camera: {fileID: 699798123}
+  meshFilter: {fileID: 210042115}
   maxHorizontalLine: {fileID: 0}
   maxVerticalLine: {fileID: 0}
   minHorizontalLine: {fileID: 0}
@@ -486,6 +486,12 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!33 &210042115 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: 3054537347885743319, guid: 07b1987490dac804e907755215999632,
+    type: 3}
+  m_PrefabInstance: {fileID: 163031141}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &229656631 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3054537347884867797, guid: 07b1987490dac804e907755215999632,
@@ -1263,6 +1269,9 @@ MonoBehaviour:
   outgoingPort: 11000
   incomingPort: 5005
   renderTexture: {fileID: 8400000, guid: cf8a0b0303f71004dba72712fd45e4d1, type: 2}
+  streamWidth: 320
+  streamHeight: 240
+  findMinMax: {fileID: 210042110}
 --- !u!20 &771195733
 Camera:
   m_ObjectHideFlags: 0
@@ -1335,9 +1344,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 167ccff729f57d44db2b18d810582a17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 80
-  rotateSpeed: 200
+  moveSpeed: 10
+  rotateSpeed: 50
   oneStep: 4.5
+  imageStreamManager: {fileID: 771195732}
+  centerMinThreshold: 0.3
+  centerMaxThreshold: 0.7
+  reachedY: 0.4
+  detected_rotateBy: 20
+  detected_moveBy: 0.5
 --- !u!65 &849401017
 BoxCollider:
   m_ObjectHideFlags: 0

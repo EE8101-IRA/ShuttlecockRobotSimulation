@@ -25,6 +25,10 @@ public class ImageStreamManager : MonoBehaviour
     private int streamHeight = 240;
     #endregion
 
+    [Header("For Testing")]
+    [SerializeField]
+    private FindMinMax findMinMax;
+
     #region private members
     private static bool run = false;
     private Thread clientReceiveThread;
@@ -134,6 +138,22 @@ public class ImageStreamManager : MonoBehaviour
         {
             responseReceived = false;
         }
+
+        // for now, test using FindMinMax
+        findMinMax.CalculateMinMax();
+        xMin = findMinMax.MinX;
+        yMin = findMinMax.MinY;
+        xMax = findMinMax.MaxX;
+        yMax = findMinMax.MaxY;
+
+        Debug.Log("XMin: " + xMin + "XMax: " + xMax);
+        Debug.Log("YMin: " + yMin + "YMax: " + yMax);
+
+        lock (responseLock)
+        {
+            responseReceived = true;
+        }
+        return;
 
         string data = TextureToBase64(renderTexture);
 
