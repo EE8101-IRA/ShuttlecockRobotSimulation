@@ -1350,7 +1350,7 @@ MonoBehaviour:
   imageStreamManager: {fileID: 771195732}
   centerMinThreshold: 0.3
   centerMaxThreshold: 0.7
-  reachedY: 0.4
+  reachedY: 0.3
   detected_rotateBy: 20
   detected_moveBy: 0.5
 --- !u!65 &849401017

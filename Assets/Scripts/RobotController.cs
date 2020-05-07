@@ -232,7 +232,7 @@ public class RobotController : MonoBehaviour
             // reached robot
             if (imageStreamManager.YMinNormalized <= reachedY)
             {
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.25f); // stop moving
 
                 ///stop the search coroutine - for now, simulation ends here
                 StopCoroutine(searchCoroutine);

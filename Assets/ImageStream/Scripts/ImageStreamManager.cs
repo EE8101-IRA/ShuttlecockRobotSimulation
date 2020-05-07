@@ -132,19 +132,20 @@ public class ImageStreamManager : MonoBehaviour
         }
     }
 
-    public void SendImage()
+    private void LocalTesting()
     {
-        lock (responseLock)
-        {
-            responseReceived = false;
-        }
-
         // for now, test using FindMinMax
         findMinMax.CalculateMinMax();
         xMin = findMinMax.MinX;
         yMin = findMinMax.MinY;
         xMax = findMinMax.MaxX;
         yMax = findMinMax.MaxY;
+
+        if (xMin >= 640 && xMax < 1280 &&
+            yMin >= 0 && yMax < streamHeight)
+            ObjectDetected = true;
+        else
+            ObjectDetected = false;
 
         Debug.Log("XMin: " + xMin + "XMax: " + xMax);
         Debug.Log("YMin: " + yMin + "YMax: " + yMax);
@@ -153,7 +154,18 @@ public class ImageStreamManager : MonoBehaviour
         {
             responseReceived = true;
         }
-        return;
+    }
+
+    public void SendImage()
+    {
+        lock (responseLock)
+        {
+            responseReceived = false;
+        }
+
+        // test without the neural network using FindMinMax script
+        //LocalTesting();
+        //return;
 
         string data = TextureToBase64(renderTexture);
 
